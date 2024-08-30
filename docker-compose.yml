@@ -1,0 +1,25 @@
+version: "3"
+services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 
+      MYSQL_DATABASE: tugas-mysql
+    ports:
+      - "3306:3306"
+    networks:
+      alkademi:
+        ipv4_address: 172.19.0.14
+
+  class-api-dev:
+    container_name: class-api-dev
+    image: class-api-dev:latest
+    networks:
+      alkademi:
+        ipv4_address: 172.19.0.15
+    restart: always
+
+networks:
+  alkademi:
+    external: true
