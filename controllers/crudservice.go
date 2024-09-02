@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"main/models"
 	"net/http"
@@ -10,34 +9,33 @@ import (
 	"gorm.io/gorm"
 )
 
-// Fungsi untuk validasi token
-func validateTokenCrud(r *http.Request) bool {
+
+type CRUDSERVICE struct {
+	DB *gorm.DB
+}
+
+func validateTokenCrudservice(r *http.Request) bool {
     token := r.Header.Get("Authorization")
-	fmt.Println(token)
     return token == "Bearer token_app"
 
 }
 
-type CRUDController struct {
-	DB *gorm.DB
-}
-
-// Fungsi untuk membuat instance CRUDController baru
-func NewCRUDController(db *gorm.DB) *CRUDController {
-	return &CRUDController{DB: db}
+// Fungsi untuk membuat instance CRUDSERVICE baru
+func NewCRUDSERVICE(db *gorm.DB) *CRUDSERVICE {
+	return &CRUDSERVICE{DB: db}
 }
 
 // Fungsi untuk menambahkan user baru
-func (ctrl *CRUDController) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (ctrl *CRUDSERVICE) CreateService(w http.ResponseWriter, r *http.Request) {
 	// Validasi token
-	if !validateTokenCrud(r) {
+	if !validateTokenCrudservice(r) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	// Dekode body JSON ke dalam struct User
-	var user models.User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	var service models.Service
+	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
@@ -45,43 +43,43 @@ func (ctrl *CRUDController) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Validasi data user (tambahkan validasi lebih lanjut jika perlu)
 
 	// Simpan user ke dalam database
-	if err := ctrl.DB.Create(&user).Error; err != nil {
-		log.Printf("Error creating user: %v", err)
-		http.Error(w, "Error creating user", http.StatusInternalServerError)
+	if err := ctrl.DB.Create(&service).Error; err != nil {
+		log.Printf("Error creating service: %v", err)
+		http.Error(w, "Error creating service", http.StatusInternalServerError)
 		return
 	}
 
 	// Set header dan kirim response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(service)
 }
 
 // Fungsi untuk mengambil daftar semua user
-func (ctrl *CRUDController) ListUsers(w http.ResponseWriter, r *http.Request) {
+func (ctrl *CRUDSERVICE) ListService(w http.ResponseWriter, r *http.Request) {
 	// Validasi token
-	if !validateTokenCrud(r) {
+	if !validateTokenCrudservice(r) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	// Ambil semua user dari database
-	var users []models.User
-	if err := ctrl.DB.Find(&users).Error; err != nil {
-		log.Printf("Error fetching users: %v", err)
-		http.Error(w, "Error fetching users", http.StatusInternalServerError)
+	var services []models.Service
+	if err := ctrl.DB.Find(&services).Error; err != nil {
+		log.Printf("Error fetching services: %v", err)
+		http.Error(w, "Error fetching services", http.StatusInternalServerError)
 		return
 	}
 
 	// Set header dan kirim response
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(users)
+	json.NewEncoder(w).Encode(services)
 }
 
 // Fungsi untuk mengambil user berdasarkan ID
-func (ctrl *CRUDController) GetUser(w http.ResponseWriter, r *http.Request) {
+func (ctrl *CRUDSERVICE) GetService(w http.ResponseWriter, r *http.Request) {
 	// Validasi token
-	if !validateTokenCrud(r) {
+	if !validateTokenCrudservice(r) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -93,23 +91,23 @@ func (ctrl *CRUDController) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Cari user berdasarkan ID
-	var user models.User
-	if err := ctrl.DB.First(&user, id).Error; err != nil {
-		log.Printf("Error fetching user: %v", err)
-		http.Error(w, "User not found", http.StatusNotFound)
+	// Cari service berdasarkan ID
+	var service models.Service
+	if err := ctrl.DB.First(&service, id).Error; err != nil {
+		log.Printf("Error fetching service: %v", err)
+		http.Error(w, "service not found", http.StatusNotFound)
 		return
 	}
 
 	// Set header dan kirim response
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(service)
 }
 
 // Fungsi untuk memperbarui user berdasarkan ID
-func (ctrl *CRUDController) UpdateUser(w http.ResponseWriter, r *http.Request) {
+func (ctrl *CRUDSERVICE) UpdateService(w http.ResponseWriter, r *http.Request) {
 	// Validasi token
-	if !validateTokenCrud(r) {
+	if !validateTokenCrudservice(r) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -122,28 +120,28 @@ func (ctrl *CRUDController) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Dekode body JSON ke dalam struct User
-	var user models.User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	var service models.Service
+	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
 	// Perbarui user berdasarkan ID
-	if err := ctrl.DB.Model(&models.User{}).Where("id = ?", id).Updates(user).Error; err != nil {
-		log.Printf("Error updating user: %v", err)
-		http.Error(w, "Error updating user", http.StatusInternalServerError)
+	if err := ctrl.DB.Model(&models.Service{}).Where("id = ?", id).Updates(service).Error; err != nil {
+		log.Printf("Error updating service: %v", err)
+		http.Error(w, "Error updating service", http.StatusInternalServerError)
 		return
 	}
 
 	// Set header dan kirim response
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(service)
 }
 
 // Fungsi untuk menghapus user berdasarkan ID
-func (ctrl *CRUDController) DeleteUser(w http.ResponseWriter, r *http.Request) {
+func (ctrl *CRUDSERVICE) DeleteService(w http.ResponseWriter, r *http.Request) {
 	// Validasi token
-	if !validateTokenCrud(r) {
+	if !validateTokenCrudservice(r) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -156,7 +154,7 @@ func (ctrl *CRUDController) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Hapus user berdasarkan ID
-	if err := ctrl.DB.Delete(&models.User{}, id).Error; err != nil {
+	if err := ctrl.DB.Delete(&models.Service{}, id).Error; err != nil {
 		log.Printf("Error deleting user: %v", err)
 		http.Error(w, "Error deleting user", http.StatusInternalServerError)
 		return
