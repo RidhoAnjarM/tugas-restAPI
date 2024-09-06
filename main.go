@@ -8,6 +8,7 @@ import (
 	"main/models"
 	"main/middleware"
 	"github.com/joho/godotenv"
+	"log"
 )
 
 func main() {
@@ -16,11 +17,14 @@ func main() {
 		return
 	}
 
+	// Membuka koneksi database
 	db, err := models.GetSqlConnection()
 	if err != nil {
-		fmt.Println("gagal koneksi database:", err)
-		return
+		log.Fatal("Could not connect to the database", err)
 	}
+
+	db.AutoMigrate(&models.User{}, &models.Role{}, &models.AC{}, &models.Service{})
+
 
 	userController := controllers.NewCRUDController(db)
 

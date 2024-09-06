@@ -1,17 +1,23 @@
 package middleware
 
 import (
-    "net/http"
+	"encoding/json"
+	"net/http"
+	"strings"
 )
 
-// TokenValidation: Memvalidasi token dari header Authorization
 func TokenValidation(next http.HandlerFunc) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        token := r.Header.Get("Authorization")
-        if token != "Bearer token_app" {
-            http.Error(w, "Unauthorized", http.StatusUnauthorized)
-            return
-        }
-        next.ServeHTTP(w, r)
-    }
+	return func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") || authHeader[7:] != "token_app" {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"status":  false,
+				"message": "Unauthorized",
+				"data":    nil,
+			})
+			return
+		}
+		next.ServeHTTP(w, r)
+	}
 }
